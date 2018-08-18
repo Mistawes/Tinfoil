@@ -12,23 +12,15 @@ namespace tin::install::nsp
     {
         private:
             tin::install::nsp::SimpleFileSystem* const m_simpleFileSystem;
-            tin::install::ContentMeta m_contentMeta;
 
-            NcmMetaRecord m_metaRecord;
-            NcmContentRecord m_cnmtContentRecord;
-            std::vector<u8> m_installContentMetaData;
+        protected:
+            void ReadCNMT() override;
+            void InstallNCA(const NcmNcaId& ncaId) override;
+            void InstallTicketCert() override;
+            void InstallCNMT() override;
 
         public:
-            NSPInstallTask(tin::install::nsp::SimpleFileSystem& simpleFileSystem, FsStorageId destStorageId);
-
-            void PrepareForInstall() override;
-            void Install() override;
-            void DebugPrintInstallData();
-
-        private:
-            void InstallNCA(const NcmNcaId& ncaId);
-            void WriteRecords();
-            void InstallTicketCert();
+            NSPInstallTask(tin::install::nsp::SimpleFileSystem& simpleFileSystem, FsStorageId destStorageId, bool ignoreReqFirmVersion);
     };
 };
 

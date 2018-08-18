@@ -403,7 +403,7 @@ Result nsCheckApplicationLaunchVersion(u64 titleID)
     return rc;
 }
 
-Result nsDisableApplicationAutoUpdate(u64 titleID)
+Result nsCountApplicationContentMeta(u64 titleId, u32* countOut)
 {
     IpcCommand c;
     ipcInitialize(&c);
@@ -417,8 +417,8 @@ Result nsDisableApplicationAutoUpdate(u64 titleID)
     raw = ipcPrepareHeader(&c, sizeof(*raw));
     
     raw->magic = SFCI_MAGIC;
-    raw->cmd_id = 903;
-    raw->title_id = titleID;
+    raw->cmd_id = 600;
+    raw->title_id = titleId;
     
     Result rc = serviceIpcDispatch(&g_nsAppManSrv);
     if (R_SUCCEEDED(rc)) {
@@ -428,9 +428,14 @@ Result nsDisableApplicationAutoUpdate(u64 titleID)
         struct {
             u64 magic;
             u64 result;
+            u32 count;
         } *resp = r.Raw;
 
         rc = resp->result;
+
+        if (R_SUCCEEDED(rc)) {
+            if (countOut) *countOut = resp->count;
+        }
     }
     
     return rc;
@@ -643,5 +648,71 @@ Result nsGetApplicationContentPath(u64 tid, u8 type, char *out, size_t buf_size)
         rc = resp->result;
     }
 
+    return rc;
+}
+
+Result nsDisableApplicationAutoUpdate(u64 titleID)
+{
+    IpcCommand c;
+    ipcInitialize(&c);
+
+    struct {
+        u64 magic;
+        u64 cmd_id;
+        u64 title_id;
+    } *raw;
+    
+    raw = ipcPrepareHeader(&c, sizeof(*raw));
+    
+    raw->magic = SFCI_MAGIC;
+    raw->cmd_id = 903;
+    raw->title_id = titleID;
+    
+    Result rc = serviceIpcDispatch(&g_nsAppManSrv);
+    if (R_SUCCEEDED(rc)) {
+        IpcParsedCommand r;
+        ipcParse(&r);
+
+        struct {
+            u64 magic;
+            u64 result;
+        } *resp = r.Raw;
+
+        rc = resp->result;
+    }
+    
+    return rc;
+}
+
+Result nsWithdrawApplicationUpdateRequest(u64 titleId)
+{
+    IpcCommand c;
+    ipcInitialize(&c);
+
+    struct {
+        u64 magic;
+        u64 cmd_id;
+        u64 title_id;
+    } *raw;
+    
+    raw = ipcPrepareHeader(&c, sizeof(*raw));
+    
+    raw->magic = SFCI_MAGIC;
+    raw->cmd_id = 907;
+    raw->title_id = titleId;
+    
+    Result rc = serviceIpcDispatch(&g_nsAppManSrv);
+    if (R_SUCCEEDED(rc)) {
+        IpcParsedCommand r;
+        ipcParse(&r);
+
+        struct {
+            u64 magic;
+            u64 result;
+        } *resp = r.Raw;
+
+        rc = resp->result;
+    }
+    
     return rc;
 }
